@@ -1,0 +1,39 @@
+layout {
+	default_tab_template {
+		pane {
+			borderless true
+			plugin {
+				location "zellij:tab-bar"
+			}
+			size 1
+		}
+		children
+		pane {
+			borderless true
+			plugin {
+				location "zellij:status-bar"
+			}
+			size 2
+		}
+	}
+	tab focus=true name="Project" {
+		pane {
+			pane {
+				command "nvim"
+				size "40%"
+			}
+			pane {
+				pane
+				pane {
+					command "lazygit"
+				}
+				split_direction "horizontal"
+			}
+			split_direction "vertical"
+		}
+	}
+	tab name="AI Workspace" {
+		pane command="ai-workspace-tab"
+	}
+}
+theme "dracula"

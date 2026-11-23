@@ -1,0 +1,8 @@
+// Companion config for dev.kdl. Use both together:
+//
+//   zellij --config dev-config.kdl --layout dev.kdl
+//
+// Make quitting and closing the terminal terminate the session instead of
+// detaching, so the AI Workspace pane's cleanup trap can stop the workspace.
+on_quit "quit"
+on_force_close "quit"

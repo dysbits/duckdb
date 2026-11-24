@@ -16,3 +16,15 @@ profile-analyze build_dir="build/clang-trace":
     ClangBuildAnalyzer --all {{build_dir}} {{build_dir}}/clang-build-analyzer.bin
     ClangBuildAnalyzer --analyze {{build_dir}}/clang-build-analyzer.bin
 
+# Usage: just build-perf [build-dir]   (default: build/perf)
+# RelWithDebInfo build with frame pointers, for perf record/report.
+build-perf build_dir="build/perf":
+    cmake -G Ninja -S "{{justfile_directory()}}" -B {{build_dir}} \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DBUILD_BENCHMARKS=1 \
+        -DDISABLE_UNITY=1 \
+        -DCMAKE_C_FLAGS="-fno-omit-frame-pointer" \
+        -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer"
+    cmake --build {{build_dir}} --parallel
+    @echo "Built {{build_dir}}/duckdb and {{build_dir}}/benchmark/benchmark_runner"
+

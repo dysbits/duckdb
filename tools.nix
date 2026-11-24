@@ -104,4 +104,19 @@ with pkgs;
   clangBuildAnalyzer
   just
   ninjatracing
+
+  # Runtime profiling and tracing
+  linuxPackages.perf
+  strace
+  time
+  sysstat
+  procps
+  lsof
+  hyperfine
+  iotop
+  heaptrack
+  py-spy
+  flamegraph
+  inferno
+  bpftrace
 ]

@@ -1,0 +1,27 @@
+#!/usr/bin/env bpftrace
+/*
+ * Off-CPU time histogram for one process.
+ *
+ * Usage: sudo bpftrace offcpu.bt <pid>
+ */
+
+BEGIN
+{
+	if ($1 == 0) {
+		printf("usage: bpftrace offcpu.bt <pid>\n");
+		exit();
+	}
+}
+
+tracepoint:sched:sched_switch
+/args->prev_pid == $1/
+{
+	@start = nsecs;
+}
+
+tracepoint:sched:sched_switch
+/args->next_pid == $1 && @start/
+{
+	@offcpu_us[comm] = hist((nsecs - @start) / 1000);
+	delete(@start);
+}

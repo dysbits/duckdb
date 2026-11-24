@@ -1,0 +1,28 @@
+#!/usr/bin/env bpftrace
+/*
+ * Count opens per path for one process.
+ *
+ * Usage: sudo bpftrace opensnoop.bt <pid>
+ *
+ * Requires: bpftrace, root or CAP_BPF/CAP_PERFMON, kernel BTF.
+ */
+
+BEGIN
+{
+	if ($1 == 0) {
+		printf("usage: bpftrace opensnoop.bt <pid>\n");
+		exit();
+	}
+}
+
+tracepoint:syscalls:sys_enter_openat
+/pid == $1/
+{
+	@opens[comm, str(args->filename)] = count();
+}
+
+tracepoint:syscalls:sys_enter_open
+/pid == $1/
+{
+	@opens[comm, str(args->filename)] = count();
+}

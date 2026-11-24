@@ -1,0 +1,69 @@
+#!/usr/bin/env bpftrace
+/*
+ * Read/write bytes per path for one process.
+ *
+ * Usage: sudo bpftrace fileio.bt <pid>
+ *
+ * Only read-family and write-family syscalls are covered. Memory-mapped IO and
+ * direct syscalls outside the traced syscall entry points are not counted.
+ */
+
+BEGIN
+{
+	if ($1 == 0) {
+		printf("usage: bpftrace fileio.bt <pid>\n");
+		exit();
+	}
+}
+
+tracepoint:syscalls:sys_enter_openat
+/pid == $1/
+{
+	@pending_path[tid] = str(args->filename);
+}
+
+tracepoint:syscalls:sys_exit_openat
+/pid == $1 && args->ret >= 0/
+{
+	@path[pid, args->ret] = @pending_path[tid];
+	delete(@pending_path[tid]);
+}
+
+tracepoint:syscalls:sys_enter_close
+/pid == $1/
+{
+	@closing[tid] = args->fd;
+}
+
+tracepoint:syscalls:sys_exit_close
+/pid == $1 && args->ret == 0/
+{
+	delete(@path[pid, @closing[tid]]);
+	delete(@closing[tid]);
+}
+
+tracepoint:syscalls:sys_enter_read
+/pid == $1/
+{
+	@read_fd[tid] = args->fd;
+}
+
+tracepoint:syscalls:sys_exit_read
+/pid == $1 && args->ret > 0/
+{
+	@bytes[comm, @path[pid, @read_fd[tid]], "read"] = sum(args->ret);
+	delete(@read_fd[tid]);
+}
+
+tracepoint:syscalls:sys_enter_write
+/pid == $1/
+{
+	@write_fd[tid] = args->fd;
+}
+
+tracepoint:syscalls:sys_exit_write
+/pid == $1 && args->ret > 0/
+{
+	@bytes[comm, @path[pid, @write_fd[tid]], "write"] = sum(args->ret);
+	delete(@write_fd[tid]);
+}

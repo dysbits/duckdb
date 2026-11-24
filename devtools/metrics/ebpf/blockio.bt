@@ -1,0 +1,14 @@
+#!/usr/bin/env bpftrace
+/*
+ * Block-layer requests and bytes per process.
+ *
+ * Usage: sudo bpftrace blockio.bt
+ *
+ * The script is system-wide; filter the output by comm if needed.
+ */
+
+tracepoint:block:block_rq_issue
+{
+	@bytes[comm] = sum(args->nr_sector * 512);
+	@requests[comm] = count();
+}

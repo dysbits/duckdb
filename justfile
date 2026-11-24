@@ -10,3 +10,9 @@ profile-ninja build_dir="build/release":
     ninjatracing {{build_dir}}/.ninja_log > {{build_dir}}/ninja-trace.json
     @echo "Wrote {{build_dir}}/ninja-trace.json - open it at https://ui.perfetto.dev"
 
+# Usage: just profile-analyze [build-dir]   (default: build/clang-trace)
+# Requires a build configured with Clang -ftime-trace.
+profile-analyze build_dir="build/clang-trace":
+    ClangBuildAnalyzer --all {{build_dir}} {{build_dir}}/clang-build-analyzer.bin
+    ClangBuildAnalyzer --analyze {{build_dir}}/clang-build-analyzer.bin
+
